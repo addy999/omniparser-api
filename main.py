@@ -8,6 +8,7 @@ from PIL import Image
 import torch
 import numpy as np
 import os
+import uuid
 
 # Existing imports
 import numpy as np
@@ -65,11 +66,13 @@ class ProcessResponse(BaseModel):
     parsed_content_list: str
     label_coordinates: str
 
+def generate_uuid():
+    return str(uuid.uuid4())
 
 def process(
     image_input: Image.Image, box_threshold: float, iou_threshold: float
 ) -> ProcessResponse:
-    image_save_path = "imgs/saved_image_demo.png"
+    image_save_path = f"imgs/{generate_uuid()}.png"
     image_input.save(image_save_path)
     image = Image.open(image_save_path)
     box_overlay_ratio = image.size[0] / 3200
@@ -108,6 +111,8 @@ def process(
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    os.remove(image_save_path)
 
     return ProcessResponse(
         image=img_str,
